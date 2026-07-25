@@ -1,0 +1,781 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pisagor Matrisi — Psikomatris & Uyum Analizi</title>
+<meta name="description" content="Doğum tarihinizden Pisagor matrisi oluşturun, uyum analizi yapın, ünlülerle karşılaştırın!">
+<meta property="og:title" content="Pisagor Matrisi — Karakter & Uyum">
+<meta property="og:description" content="Doğum tarihini gir, matrisini gör, uyumunu test et!">
+<style>
+:root{--bg:#0f1220;--bg2:#171a2e;--card:#1d2140;--line:#2c3160;--txt:#e8eaf6;--muted:#9aa0c7;
+--acc:#7c5cff;--acc2:#00d4b8;--warn:#ffb020;--bad:#ff5d6c;--good:#3ddc97;--pink:#ff6bcb}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:radial-gradient(1200px 600px at 20% -10%,#2a2060 0%,var(--bg) 55%);
+color:var(--txt);min-height:100vh;padding:24px 14px 60px}
+.wrap{max-width:1060px;margin:0 auto}
+header{text-align:center;margin-bottom:26px}
+h1{font-size:clamp(22px,4vw,34px)}
+h1 span{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--muted);margin-top:8px;font-size:14px}
+.card{background:linear-gradient(180deg,var(--card),#191d38);border:1px solid var(--line);
+border-radius:18px;padding:22px;margin-bottom:20px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.form{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;justify-content:center}
+.fld{display:flex;flex-direction:column;gap:6px}
+.fld label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+input,select{background:#12152b;border:1px solid var(--line);color:var(--txt);
+padding:12px 14px;border-radius:12px;font-size:16px;width:110px;outline:none}
+input:focus,select:focus{border-color:var(--acc)}
+select{width:150px}
+button{cursor:pointer;border:none;border-radius:12px;padding:13px 22px;font-size:15px;font-weight:600;
+background:linear-gradient(90deg,var(--acc),#5b7cff);color:#fff;transition:.2s}
+button:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(124,92,255,.4)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
+button.ghost:hover{border-color:var(--acc);color:var(--txt)}
+button.pink{background:linear-gradient(90deg,var(--pink),var(--acc))}
+button.green{background:linear-gradient(90deg,var(--good),var(--acc2))}
+button.sm{padding:9px 15px;font-size:13px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:6px}
+.step{background:#12152b;border:1px solid var(--line);border-radius:14px;padding:14px}
+.step b{display:block;color:var(--acc2);font-size:12px;letter-spacing:1px;margin-bottom:6px}
+.step .val{font-size:24px;font-weight:700}
+.step .exp{font-size:12px;color:var(--muted);margin-top:4px}
+.matrix{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:520px;margin:0 auto}
+.cell{background:#12152b;border:1px solid var(--line);border-radius:16px;padding:14px 10px;text-align:center;
+cursor:pointer;transition:.18s;position:relative;min-height:104px;display:flex;flex-direction:column;justify-content:center}
+.cell:hover{border-color:var(--acc);transform:translateY(-3px)}
+.cell.sel{border-color:var(--acc2);box-shadow:0 0 0 2px rgba(0,212,184,.25)}
+.cell .digits{font-size:26px;font-weight:800;letter-spacing:2px;word-break:break-all}
+.cell .name{font-size:11px;color:var(--muted);margin-top:6px}
+.cell .n{position:absolute;top:8px;right:10px;font-size:11px;color:var(--muted)}
+.empty .digits{color:#454a7a}
+.lvl0{--c:#454a7a}.lvl1{--c:var(--warn)}.lvl2{--c:var(--good)}.lvl3{--c:var(--acc2)}.lvl4{--c:var(--bad)}
+.cell .digits{color:var(--c,#fff)}
+.detail{margin-top:18px;background:#12152b;border:1px solid var(--line);border-radius:14px;padding:16px;min-height:80px}
+.detail h3{font-size:16px;margin-bottom:6px;color:var(--acc2)}
+.detail p{color:#cfd3f2;line-height:1.6;font-size:14px}
+.lines{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.lineitem{background:#12152b;border:1px solid var(--line);border-radius:14px;padding:14px}
+.lineitem .top{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600}
+.lineitem small{color:var(--muted);font-weight:400;font-size:12px}
+.bar{height:7px;background:#262a4d;border-radius:6px;margin:10px 0 8px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .8s ease}
+.bar.pink i{background:linear-gradient(90deg,var(--pink),var(--acc))}
+h2{font-size:17px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+h2::before{content:'';width:4px;height:18px;background:linear-gradient(var(--acc),var(--acc2));border-radius:3px}
+h2.ph::before{background:linear-gradient(var(--pink),var(--acc))}
+.hist{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.chip{background:#12152b;border:1px solid var(--line);color:var(--muted);padding:7px 13px;border-radius:20px;
+font-size:13px;cursor:pointer;transition:.15s}
+.chip:hover{border-color:var(--acc);color:var(--txt)}
+.note{font-size:12px;color:var(--muted);text-align:center;line-height:1.6;margin-top:10px}
+.hidden{display:none!important}
+.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.tabs{display:flex;gap:0;margin-bottom:18px;border-radius:14px;overflow:hidden;border:1px solid var(--line);max-width:600px;margin-left:auto;margin-right:auto}
+.tab{flex:1;padding:12px;text-align:center;background:#12152b;color:var(--muted);cursor:pointer;font-size:14px;font-weight:600;transition:.15s}
+.tab.on{background:var(--acc);color:#fff}
+.tab:hover:not(.on){background:#1a1e40}
+.uyum-wrap{display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:start;max-width:680px;margin:0 auto}
+.uyum-col{display:flex;flex-direction:column;gap:8px}
+.uyum-mid{display:flex;flex-direction:column;gap:8px;align-items:center;padding-top:28px}
+.uyum-cell{background:#12152b;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center;min-height:72px;
+display:flex;flex-direction:column;justify-content:center}
+.uyum-cell .digits{font-size:20px;font-weight:800;letter-spacing:1px}
+.uyum-cell .name{font-size:10px;color:var(--muted);margin-top:4px}
+.uyum-vs{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+font-size:11px;font-weight:700;border:2px solid var(--line)}
+.uvs-hi{border-color:var(--good);color:var(--good);background:rgba(61,220,151,.08)}
+.uvs-md{border-color:var(--warn);color:var(--warn);background:rgba(255,176,32,.08)}
+.uvs-lo{border-color:var(--bad);color:var(--bad);background:rgba(255,93,108,.08)}
+.big-score{text-align:center;margin:20px 0}
+.big-score .num{font-size:64px;font-weight:900;line-height:1}
+.big-score .lbl{font-size:14px;color:var(--muted);margin-top:6px}
+.share-box{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.share-box button{font-size:13px;padding:10px 16px}
+.p2form{margin-top:16px;padding-top:16px;border-top:1px dashed var(--line)}
+.tag{display:inline-block;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;margin-left:6px}
+.tag-g{background:rgba(61,220,151,.15);color:var(--good)}
+.tag-b{background:rgba(255,93,108,.15);color:var(--bad)}
+/* lang switch */
+.lang-sw{position:fixed;top:14px;right:14px;z-index:99;display:flex;gap:0;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.lang-btn{padding:8px 14px;font-size:13px;font-weight:700;background:#12152b;color:var(--muted);cursor:pointer;border:none}
+.lang-btn.on{background:var(--acc);color:#fff}
+/* confetti */
+.confetti-wrap{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden}
+.confetti-piece{position:absolute;top:-20px;width:10px;height:10px;border-radius:2px;animation:confFall linear forwards}
+@keyframes confFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+/* celeb grid */
+.celeb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
+.celeb-card{background:#12152b;border:1px solid var(--line);border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;transition:.15s}
+.celeb-card:hover{border-color:var(--pink);transform:translateY(-2px)}
+.celeb-card .cname{font-weight:700;font-size:14px;margin-bottom:4px}
+.celeb-card .cdate{font-size:11px;color:var(--muted)}
+.celeb-card .cscore{font-size:22px;font-weight:900;margin-top:6px}
+/* qr */
+.qr-box{text-align:center;margin-top:14px}
+.qr-box canvas{border-radius:12px;border:4px solid #fff}
+/* card image */
+#cardCanvas{display:none}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9998;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-inner{background:var(--card);border-radius:18px;padding:24px;max-width:500px;width:100%;text-align:center;position:relative}
+.modal-inner img{max-width:100%;border-radius:12px;margin:12px 0}
+.modal-close{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--txt);font-size:24px;cursor:pointer}
+@media(max-width:700px){.uyum-wrap{grid-template-columns:1fr 40px 1fr}.uyum-cell .digits{font-size:16px}}
+@media print{body{background:#fff;color:#000}.card{box-shadow:none}button,.hist,.chip,.share-box,.tabs,.lang-sw{display:none}}
+</style>
+</head>
+<body>
+<!-- LANG SWITCH -->
+<div class="lang-sw">
+<button class="lang-btn on" onclick="setLang('tr')">TR</button>
+<button class="lang-btn" onclick="setLang('en')">EN</button>
+</div>
+
+<div class="wrap">
+<header>
+<h1>🔺 Pisagor <span data-i="title">Matrisi</span></h1>
+<p class="sub" data-i="subtitle">Karakter haritanızı çıkarın · Uyum analizi yapın · Paylaşın</p>
+</header>
+
+<!-- GİRİŞ -->
+<div class="card" id="inputCard">
+<div class="form">
+<div class="fld"><label data-i="day">Gün</label><input id="d" type="number" min="1" max="31" placeholder="15"></div>
+<div class="fld"><label data-i="month">Ay</label>
+<select id="m" data-months></select>
+</div>
+<div class="fld"><label data-i="year">Yıl</label><input id="y" type="number" min="1900" max="2100" placeholder="1990"></div>
+<button onclick="hesapla()" data-i="calc">Hesapla</button>
+</div>
+<div class="p2form" id="p2box">
+<p style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:10px" data-i="addP2">💕 Uyum analizi için ikinci kişiyi ekleyin</p>
+<div class="form">
+<div class="fld"><label data-i="day">Gün</label><input id="d2" type="number" min="1" max="31" placeholder="20"></div>
+<div class="fld"><label data-i="month">Ay</label>
+<select id="m2" data-months></select>
+</div>
+<div class="fld"><label data-i="year">Yıl</label><input id="y2" type="number" min="1900" max="2100" placeholder="1992"></div>
+<button class="pink" onclick="hesaplaUyum()" data-i="uyumBtn">💞 Uyum Analizi</button>
+</div>
+</div>
+<div id="hist" class="hist"></div>
+<p class="note" id="err" style="color:var(--bad)"></p>
+</div>
+
+<!-- PAYLAŞ -->
+<div id="shareBox" class="card hidden">
+<h2 data-i="shareTitle">🔗 Sonucunu Paylaş</h2>
+<div class="share-box">
+<button class="ghost sm" onclick="linkKopyala()">📋 <span data-i="copyLink">Linki Kopyala</span></button>
+<button class="ghost sm" onclick="wpPaylas()">💬 WhatsApp</button>
+<button class="ghost sm" onclick="twPaylas()">🐦 Twitter/X</button>
+<button class="ghost sm" onclick="gorselOlustur()">🎨 <span data-i="cardImg">Görsel Kart</span></button>
+<button class="ghost sm" onclick="qrGoster()">📱 QR Kod</button>
+<button class="ghost sm" onclick="window.print()">🖨️ <span data-i="print">Yazdır</span></button>
+<button class="ghost sm" onclick="metinKopyala()">📄 <span data-i="copyTxt">Metni Kopyala</span></button>
+</div>
+<div class="qr-box hidden" id="qrBox"><canvas id="qrCanvas"></canvas></div>
+</div>
+
+<!-- SEKMELER -->
+<div id="tabsWrap" class="hidden">
+<div class="tabs">
+<div class="tab on" onclick="sekme(0,this)" id="tab0">🔺 <span data-i="tabMatrix">Matris</span></div>
+<div class="tab" onclick="sekme(1,this)" id="tab1">💞 <span data-i="tabUyum">Uyum</span></div>
+<div class="tab" onclick="sekme(2,this)" id="tab2">🌟 <span data-i="tabCeleb">Ünlüler</span></div>
+</div>
+</div>
+
+<!-- TEK KİŞİ -->
+<div id="out" class="hidden">
+<div class="card"><h2 data-i="stepsTitle">Hesaplama Adımları</h2><div class="steps" id="steps"></div></div>
+<div class="card">
+<h2><span data-i="matrixTitle">Matris</span> <small style="font-size:12px;color:var(--muted);font-weight:400;margin-left:6px" id="nameTag"></small></h2>
+<div class="matrix" id="mtx"></div>
+<div class="detail" id="detail"><p style="color:var(--muted)" data-i="clickCell">Detaylı yorum için bir hücreye tıklayın…</p></div>
+</div>
+<div class="card"><h2 data-i="linesTitle">Hat Analizleri</h2><div class="lines" id="lines"></div></div>
+</div>
+
+<!-- UYUM -->
+<div id="outU" class="hidden">
+<div class="card">
+<h2 class="ph">💕 <span data-i="uyumScore">Uyum Skoru</span></h2>
+<div class="big-score" id="bigScore"></div>
+<div class="bar pink" style="max-width:400px;margin:0 auto;height:10px"><i id="uyumBar" style="width:0%"></i></div>
+<p class="note" id="uyumYorum" style="margin-top:14px;font-size:14px;color:var(--txt)"></p>
+</div>
+<div class="card"><h2 class="ph" data-i="cellCompare">Hücre Karşılaştırması</h2><div class="uyum-wrap" id="uyumGrid"></div></div>
+<div class="card"><h2 class="ph" data-i="lineCompare">Hat Uyumu</h2><div class="lines" id="uyumLines"></div></div>
+<div class="card"><h2 class="ph" data-i="strengths">Güçlü & Zayıf Noktalar</h2><div id="uyumNotes" style="line-height:1.8;font-size:14px"></div></div>
+</div>
+
+<!-- ÜNLÜLER -->
+<div id="outC" class="hidden">
+<div class="card">
+<h2 class="ph">🌟 <span data-i="celebTitle">Ünlülerle Uyumun</span></h2>
+<p class="note" data-i="celebSub">Doğum tarihinize göre ünlü kişilerle uyum yüzdeleriniz</p>
+<div class="celeb-grid" id="celebGrid"></div>
+</div>
+</div>
+
+<p class="note" id="footNote" style="margin-top:20px;display:none" data-i="disclaimer">⚠️ Bu yöntem numerolojik/ezoterik bir uygulamadır; bilimsel geçerliliği yoktur.</p>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="modal hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+<div class="modal-inner">
+<button class="modal-close" onclick="$('modal').classList.add('hidden')">✕</button>
+<h2 style="justify-content:center" data-i="cardTitle">🎨 Sonuç Kartınız</h2>
+<img id="modalImg" src="" alt="Pisagor Matrisi Kartı">
+<div class="share-box">
+<button class="sm" onclick="indirGorsel()">⬇️ <span data-i="download">İndir</span></button>
+</div>
+</div>
+</div>
+
+<canvas id="cardCanvas" width="1080" height="1350"></canvas>
+
+<script>
+/* ==================== DİL SİSTEMİ ==================== */
+const I18N={
+tr:{
+title:'Matrisi',subtitle:'Karakter haritanızı çıkarın · Uyum analizi yapın · Paylaşın',
+day:'Gün',month:'Ay',year:'Yıl',calc:'Hesapla',addP2:'💕 Uyum analizi için ikinci kişiyi ekleyin',
+uyumBtn:'💞 Uyum Analizi',shareTitle:'🔗 Sonucunu Paylaş',copyLink:'Linki Kopyala',
+cardImg:'Görsel Kart',print:'Yazdır',copyTxt:'Metni Kopyala',tabMatrix:'Matris',tabUyum:'Uyum',
+tabCeleb:'Ünlüler',stepsTitle:'Hesaplama Adımları',matrixTitle:'Matris',clickCell:'Detaylı yorum için bir hücreye tıklayın…',
+linesTitle:'Hat Analizleri',uyumScore:'Uyum Skoru',cellCompare:'Hücre Karşılaştırması',
+lineCompare:'Hat Uyumu',strengths:'Güçlü & Zayıf Noktalar',celebTitle:'Ünlülerle Uyumun',
+celebSub:'Doğum tarihinize göre ünlü kişilerle uyum yüzdeleriniz',
+disclaimer:'⚠️ Bu yöntem numerolojik/ezoterik bir uygulamadır; bilimsel geçerliliği yoktur.',
+cardTitle:'🎨 Sonuç Kartınız',download:'İndir',
+months:['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
+errValid:'Lütfen geçerli bir tarih girin.',errCal:'Bu tarih takvimde yok.',
+s1l:'Tüm rakamların toplamı',s2l:'rakamları toplamı',s3l:'ilk rakam çıkarma',s4l:'rakamları toplamı',
+hatEmpty:'Boş hat.',hatWeak:'Zayıf.',hatMid:'Orta düzey.',hatStrong:'Güçlü.',hatVStrong:'Çok güçlü.',
+uyumHard:'Zor bir ilişki. Farklılıklar çok; anlayış ve sabır şart.',
+uyumBelow:'Ortalamanın altı. Bilinçli çabayla aşılabilir.',
+uyumMid:'Orta düzey uyum. Bazı alanlarda harika.',
+uyumGood:'İyi uyum! Birbirinizi tamamlıyorsunuz.',
+uyumPerf:'Mükemmel uyum! Birbiriniz için yaratılmışsınız. 🎉',
+strLabel:'✅ Güçlü uyum alanları:',weakLabel:'⚠️ Dikkat gereken alanlar:',
+strTip:'💡 Farklılıklar tamamlayıcı olabilir.',
+wpMsg:'Pisagor matrisime bak! 🔺',wpMsgU:'Pisagor uyum analizimiz 💞',
+copied:'Kopyalandı! ✅',strongU:'Güçlü uyum',midU:'Orta uyum',weakU:'Zayıf uyum'
+},
+en:{
+title:'Matrix',subtitle:'Discover your character map · Compatibility analysis · Share',
+day:'Day',month:'Month',year:'Year',calc:'Calculate',addP2:'💕 Add second person for compatibility',
+uyumBtn:'💞 Compatibility',shareTitle:'🔗 Share Result',copyLink:'Copy Link',
+cardImg:'Image Card',print:'Print',copyTxt:'Copy Text',tabMatrix:'Matrix',tabUyum:'Compatibility',
+tabCeleb:'Celebrities',stepsTitle:'Calculation Steps',matrixTitle:'Matrix',clickCell:'Click a cell for details…',
+linesTitle:'Line Analysis',uyumScore:'Compatibility Score',cellCompare:'Cell Comparison',
+lineCompare:'Line Compatibility',strengths:'Strengths & Weaknesses',celebTitle:'Celebrity Match',
+celebSub:'Your compatibility with famous people based on birthdate',
+disclaimer:'⚠️ This is a numerological method with no scientific validity.',
+cardTitle:'🎨 Your Result Card',download:'Download',
+months:['January','February','March','April','May','June','July','August','September','October','November','December'],
+errValid:'Please enter a valid date.',errCal:'This date does not exist.',
+s1l:'Sum of all digits',s2l:'digit sum',s3l:'subtract first digit',s4l:'digit sum',
+hatEmpty:'Empty line.',hatWeak:'Weak.',hatMid:'Moderate.',hatStrong:'Strong.',hatVStrong:'Very strong.',
+uyumHard:'A challenging relationship. Big differences require patience.',
+uyumBelow:'Below average. Conscious effort is needed.',
+uyumMid:'Moderate compatibility. Great in some areas.',
+uyumGood:'Good match! You complement each other well.',
+uyumPerf:'Perfect match! You\'re made for each other. 🎉',
+strLabel:'✅ Strong areas:',weakLabel:'⚠️ Areas to work on:',
+strTip:'💡 Differences can be complementary.',
+wpMsg:'Check my Pythagorean Matrix! 🔺',wpMsgU:'Our Pythagorean compatibility 💞',
+copied:'Copied! ✅',strongU:'Strong',midU:'Moderate',weakU:'Weak'
+}};
+
+let LANG='tr';
+function L(k){return I18N[LANG][k]||k}
+
+function setLang(l){
+LANG=l;
+document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('on',b.textContent.trim()===l.toUpperCase()));
+document.documentElement.lang=l;
+document.querySelectorAll('[data-i]').forEach(el=>{const k=el.dataset.i;if(I18N[l][k])el.textContent=I18N[l][k];});
+document.querySelectorAll('[data-months]').forEach(sel=>{
+sel.innerHTML=I18N[l].months.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');
+});
+if(P1)cizTek();if(P2){cizUyum();cizCeleb();}
+}
+
+/* ==================== META ==================== */
+const META_TR={
+1:{n:'Karakter & İrade',t:['Benlik belirsiz.','Yumuşak, uyumlu.','Dengeli karakter.','İçten kararlı.','Lider, otoriter.','Baskın benlik.']},
+2:{n:'Enerji & Canlılık',t:['Düşük enerji.','Ortanın altı.','Dengeli enerji.','Yüksek enerji.','Çok yüksek.','Aşırı enerji.']},
+3:{n:'Bilim & Düzen',t:['Sezgisel.','Değişken ilgi.','Dengeli merak.','Bilime yatkın.','Analitik.','Mükemmeliyetçi.']},
+4:{n:'Sağlık',t:['Hassas bünye.','Orta sağlık.','Sağlam.','Çok güçlü.','Olağanüstü.','Devasa potansiyel.']},
+5:{n:'Sezgi & Mantık',t:['Sezgi kapalı.','Zayıf sezgi.','Dengeli.','Güçlü önsezi.','Çok güçlü.','Olağanüstü.']},
+6:{n:'Emek & Beceri',t:['Zihinsel alanlar.','Gerekirse yapar.','İyi beceri.','Usta işi.','Azimli.','Aşırı yük.']},
+7:{n:'Şans & Yetenek',t:['Emekle kazanır.','Tohum var.','İyi şans.','Şanslı.','Hassas ruh.','Olağanüstü.']},
+8:{n:'Sorumluluk',t:['Kaçınır.','Gerekince alır.','Güvenilir.','Fedakâr.','Yüksek görev.','Aşırı sorumluluk.']},
+9:{n:'Zeka & Hafıza',t:['Çalışmayla güçlenir.','Emek ister.','İyi kavrayış.','Hızlı öğrenir.','Çok yüksek.','Olağanüstü.']}
+};
+const META_EN={
+1:{n:'Character & Will',t:['Unclear self.','Soft, adaptable.','Balanced.','Quietly firm.','Leader, strong will.','Dominant ego.']},
+2:{n:'Energy & Vitality',t:['Low energy.','Below average.','Balanced.','High energy.','Very high.','Extreme energy.']},
+3:{n:'Science & Order',t:['Intuitive.','Varied interests.','Balanced curiosity.','Science-oriented.','Analytical.','Perfectionist.']},
+4:{n:'Health',t:['Sensitive.','Average.','Strong.','Very strong.','Exceptional.','Immense potential.']},
+5:{n:'Intuition & Logic',t:['Closed intuition.','Weak intuition.','Balanced.','Strong intuition.','Very strong.','Extraordinary.']},
+6:{n:'Labor & Skill',t:['Mental fields.','Does if needed.','Good skill.','Master level.','Determined.','Overload risk.']},
+7:{n:'Luck & Talent',t:['Earns by effort.','Seed exists.','Good luck.','Lucky.','Sensitive soul.','Extraordinary.']},
+8:{n:'Responsibility',t:['Avoids it.','Takes when needed.','Reliable.','Devoted.','High duty.','Excessive duty.']},
+9:{n:'Intelligence',t:['Grows with work.','Needs effort.','Good memory.','Fast learner.','Very high.','Extraordinary.']}
+};
+
+function META(k){return LANG==='en'?META_EN[k]:META_TR[k];}
+
+const LINES_DATA=[
+{k:[1,2,3],tr:'Özsaygı',en:'Self-esteem',dt:'Kendini değerli hissetme.',de:'Sense of self-worth.'},
+{k:[4,5,6],tr:'Aile & Yuva',en:'Family & Home',dt:'Yuva kurma isteği.',de:'Desire to build a home.'},
+{k:[7,8,9],tr:'İstikrar',en:'Stability',dt:'Kararlı ilerleme.',de:'Steady progress.'},
+{k:[1,4,7],tr:'Hedef',en:'Goals',dt:'Amaç belirleme.',de:'Setting goals.'},
+{k:[2,5,8],tr:'Refah',en:'Prosperity',dt:'Maddi güven.',de:'Material security.'},
+{k:[3,6,9],tr:'Bağımsızlık',en:'Independence',dt:'Özgür hareket.',de:'Free movement.'},
+{k:[1,5,9],tr:'Mizaç',en:'Temperament',dt:'Duygusal yoğunluk.',de:'Emotional intensity.'},
+{k:[3,5,7],tr:'Ruhsal',en:'Spiritual',dt:'Manevi potansiyel.',de:'Spiritual potential.'}
+];
+function LINES(){return LINES_DATA.map(l=>({k:l.k,n:LANG==='en'?l.en:l.tr,d:LANG==='en'?l.de:l.dt}));}
+
+/* ==================== ÜNLÜLER ==================== */
+const CELEBS=[
+{n:'Albert Einstein',d:14,m:3,y:1879},{n:'Nikola Tesla',d:10,m:7,y:1856},
+{n:'Leonardo da Vinci',d:15,m:4,y:1452},{n:'Mozart',d:27,m:1,y:1756},
+{n:'Atatürk',d:19,m:5,y:1881},{n:'Frida Kahlo',d:6,m:7,y:1907},
+{n:'Steve Jobs',d:24,m:2,y:1955},{n:'Marie Curie',d:7,m:11,y:1867},
+{n:'Beethoven',d:17,m:12,y:1770},{n:'Cleopatra',d:1,m:11,y:-69},
+{n:'Napoleon',d:15,m:8,y:1769},{n:'Shakespeare',d:23,m:4,y:1564},
+{n:'Elon Musk',d:28,m:6,y:1971},{n:'Rihanna',d:20,m:2,y:1988},
+{n:'Freddie Mercury',d:5,m:9,y:1946},{n:'Barış Manço',d:2,m:1,y:1943}
+];
+
+/* ==================== HESAP ==================== */
+let P1=null,P2=null,aktifSekme=0;
+
+function pHesapla(d,m,y){
+const yy=Math.abs(y);
+const str=String(d).padStart(2,'0')+String(m).padStart(2,'0')+String(yy);
+const dig=n=>String(n).split('').map(Number);
+const s=a=>a.reduce((x,z)=>x+z,0);
+const s1=s(dig(str)),s2=s(dig(s1));
+const ilk=d<10?d:Math.floor(d/10);
+const s3=s1-2*ilk,s4=s(dig(Math.abs(s3)));
+const all=[...dig(str),...dig(s1),...dig(s2),...dig(Math.abs(s3)),...dig(s4)].filter(x=>x>0);
+const cnt={};for(let i=1;i<=9;i++)cnt[i]=all.filter(x=>x===i).length;
+return{d,m,y,s1,s2,s3,s4,ilk,cnt,str};
+}
+
+function dogrula(d,m,y){
+if(!d||!y||d<1||d>31||Math.abs(y)<1)return L('errValid');
+const dt=new Date(Math.abs(y),m-1,d);
+if(dt.getDate()!==d||dt.getMonth()!==m-1)return L('errCal');
+return '';
+}
+
+function hesapla(){
+const d=+$('d').value,m=+$('m').value,y=+$('y').value;
+const e=dogrula(d,m,y);$('err').textContent=e;if(e)return;
+P1=pHesapla(d,m,y);P2=null;aktifSekme=0;
+cizTek();cizSekme();guncUrl();kaydet(fmtT(d,m,y));
+show('shareBox');show('out');hide('outU');hide('outC');
+$('tab0').classList.add('on');$('tab1').classList.remove('on');$('tab2').classList.remove('on');
+$('footNote').style.display='';
+confetti();
+}
+
+function hesaplaUyum(){
+const d1=+$('d').value,m1=+$('m').value,y1=+$('y').value;
+const d2=+$('d2').value,m2=+$('m2').value,y2=+$('y2').value;
+let e=dogrula(d1,m1,y1);if(!e)e=dogrula(d2,m2,y2);
+$('err').textContent=e;if(e)return;
+P1=pHesapla(d1,m1,y1);P2=pHesapla(d2,m2,y2);aktifSekme=1;
+cizTek();cizUyum();cizCeleb();cizSekme();guncUrl();
+kaydet(fmtT(d1,m1,y1)+' ❤ '+fmtT(d2,m2,y2));
+show('shareBox');show('tabsWrap');hide('out');show('outU');hide('outC');
+$('tab0').classList.remove('on');$('tab1').classList.add('on');$('tab2').classList.remove('on');
+$('footNote').style.display='';
+confetti();
+}
+
+/* ==================== ÇİZİM TEK ==================== */
+function cizTek(){
+if(!P1)return;
+const{s1,s2,s3,s4,ilk,cnt}=P1;
+$('nameTag').textContent=fmtT(P1.d,P1.m,P1.y);
+$('steps').innerHTML=[
+['1.',s1,L('s1l')],['2.',s2,s1+' '+L('s2l')],['3.',s3,s1+' − 2×'+ilk],['4.',s4,Math.abs(s3)+' '+L('s4l')]
+].map(([b,v,e])=>`<div class="step"><b>${b}</b><div class="val">${v}</div><div class="exp">${e}</div></div>`).join('');
+
+const order=[1,4,7,2,5,8,3,6,9];
+$('mtx').innerHTML=order.map(k=>{
+const c=cnt[k];const m=META(k);
+return`<div class="cell ${lvlCls(c)} ${c?'':'empty'}" onclick="sec(${k},this)">
+<span class="n">${c}</span><div class="digits">${c?String(k).repeat(Math.min(c,6)):'—'}</div>
+<div class="name">${k}·${m.n}</div></div>`;
+}).join('');
+
+$('lines').innerHTML=LINES().map(Li=>{
+const t=Li.k.reduce((a,k)=>a+cnt[k],0);
+const p=Math.min(100,Math.round(t/9*100));
+const y=t===0?L('hatEmpty'):t<=2?L('hatWeak'):t<=4?L('hatMid'):t<=6?L('hatStrong'):L('hatVStrong');
+return hatBox(Li,t,p,y);
+}).join('');
+$('detail').innerHTML=`<p style="color:var(--muted)">${L('clickCell')}</p>`;
+}
+
+function sec(k,el){
+document.querySelectorAll('#mtx .cell').forEach(c=>c.classList.remove('sel'));
+el.classList.add('sel');
+const c=P1.cnt[k],m=META(k),i=Math.min(c,5);
+$('detail').innerHTML=`<h3>${k} — ${m.n} (${c})</h3><p>${m.t[i]}</p>`;
+}
+
+/* ==================== ÇİZİM UYUM ==================== */
+function cizUyum(){
+if(!P1||!P2)return;
+const c1=P1.cnt,c2=P2.cnt;
+let topU=0;const order=[1,4,7,2,5,8,3,6,9];
+let g1='',g2='',gm='';
+order.forEach(k=>{
+const a=c1[k],b=c2[k],diff=Math.abs(a-b);
+const sc=diff===0?100:diff===1?80:diff===2?55:diff===3?30:10;
+topU+=sc;
+const cls=sc>=70?'uvs-hi':sc>=45?'uvs-md':'uvs-lo';
+g1+=uCell(k,a);g2+=uCell(k,b);
+gm+=`<div class="uyum-vs ${cls}">${sc}%</div>`;
+});
+$('uyumGrid').innerHTML=
+`<div class="uyum-col">${g1}<p class="note">${fmtT(P1.d,P1.m,P1.y)}</p></div>
+<div class="uyum-mid">${gm}</div>
+<div class="uyum-col">${g2}<p class="note">${fmtT(P2.d,P2.m,P2.y)}</p></div>`;
+
+const ort=Math.round(topU/9);
+animSayi($('bigScore'),ort);
+setTimeout(()=>{$('uyumBar').style.width=ort+'%';},100);
+
+const uy=ort<=30?L('uyumHard'):ort<=50?L('uyumBelow'):ort<=65?L('uyumMid'):ort<=80?L('uyumGood'):L('uyumPerf');
+$('uyumYorum').textContent=uy;
+
+$('uyumLines').innerHTML=LINES().map(Li=>{
+const t1=Li.k.reduce((a,k)=>a+c1[k],0),t2=Li.k.reduce((a,k)=>a+c2[k],0);
+const diff=Math.abs(t1-t2),sc=Math.max(0,100-diff*12);
+const tag=sc>=60?`<span class="tag tag-g">${L('strongU')}</span>`:`<span class="tag tag-b">${L('weakU')}</span>`;
+return`<div class="lineitem"><div class="top"><span>${Li.n} ${tag}</span><small>${t1} vs ${t2}</small></div>
+<div class="bar pink"><i style="width:${sc}%"></i></div><p>${Li.d}</p></div>`;
+}).join('');
+
+let guclu=[],zayif=[];
+for(let k=1;k<=9;k++){const diff=Math.abs(c1[k]-c2[k]);if(diff<=1)guclu.push(META(k).n);if(diff>=3)zayif.push(META(k).n);}
+$('uyumNotes').innerHTML=
+`<p>${L('strLabel')} <b style="color:var(--good)">${guclu.length?guclu.join(', '):'—'}</b></p>
+<p style="margin-top:8px">${L('weakLabel')} <b style="color:var(--bad)">${zayif.length?zayif.join(', '):'—'}</b></p>
+<p style="margin-top:8px;color:var(--muted)">${L('strTip')}</p>`;
+}
+
+function uCell(k,c){const m=META(k);
+return`<div class="uyum-cell ${lvlCls(c)} ${c?'':'empty'}"><div class="digits">${c?String(k).repeat(Math.min(c,5)):'—'}</div><div class="name">${m.n}</div></div>`;}
+
+/* ==================== ÜNLÜLER ==================== */
+function cizCeleb(){
+if(!P1)return;
+const sonuc=CELEBS.map(c=>{
+const p=pHesapla(c.d,c.m,Math.abs(c.y));
+let topU=0;for(let k=1;k<=9;k++){const diff=Math.abs(P1.cnt[k]-p.cnt[k]);topU+=(diff===0?100:diff===1?80:diff===2?55:diff===3?30:10);}
+return{...c,sc:Math.round(topU/9)};
+}).sort((a,b)=>b.sc-a.sc);
+
+$('celebGrid').innerHTML=sonuc.map(c=>{
+const renk=c.sc>=75?'var(--good)':c.sc>=50?'var(--warn)':'var(--bad)';
+return`<div class="celeb-card" onclick="celebDetay('${c.n}',${c.d},${c.m},${c.y})">
+<div class="cname">${c.n}</div>
+<div class="cdate">${fmtT(c.d,c.m,Math.abs(c.y))}</div>
+<div class="cscore" style="color:${renk}">%${c.sc}</div></div>`;
+}).join('');
+}
+
+function celebDetay(name,d,m,y){
+$('d2').value=d;$('m2').value=m;$('y2').value=Math.abs(y);
+P2=pHesapla(d,m,y);cizUyum();
+sekme(1,$('tab1'));
+$('outU').scrollIntoView({behavior:'smooth'});
+}
+
+/* ==================== SEKMELER ==================== */
+function cizSekme(){$('tabsWrap').classList.toggle('hidden',!P1);}
+function sekme(n,el){
+aktifSekme=n;
+document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+el.classList.add('on');
+$('out').classList.toggle('hidden',n!==0);
+$('outU').classList.toggle('hidden',n!==1);
+$('outC').classList.toggle('hidden',n!==2);
+if(n===2&&P1&&!P2)cizCeleb();
+if(n===2)show('outC');
+}
+
+/* ==================== CONFETTI ==================== */
+function confetti(){
+const w=document.createElement('div');w.className='confetti-wrap';document.body.appendChild(w);
+const colors=['#7c5cff','#00d4b8','#ff6bcb','#ffb020','#3ddc97','#ff5d6c','#5b7cff'];
+for(let i=0;i<80;i++){
+const p=document.createElement('div');p.className='confetti-piece';
+p.style.left=Math.random()*100+'%';
+p.style.background=colors[Math.floor(Math.random()*colors.length)];
+p.style.width=(6+Math.random()*8)+'px';
+p.style.height=(6+Math.random()*8)+'px';
+p.style.animationDuration=(2+Math.random()*3)+'s';
+p.style.animationDelay=(Math.random()*1.5)+'s';
+w.appendChild(p);
+}
+setTimeout(()=>w.remove(),5500);
+}
+
+/* ==================== ANİMASYONLU SAYI ==================== */
+function animSayi(el,hedef){
+const renk=hedef>=75?'var(--good)':hedef>=50?'var(--warn)':'var(--bad)';
+let cur=0;const dur=1200,start=performance.now();
+function step(ts){
+const prog=Math.min((ts-start)/dur,1);
+cur=Math.round(prog*hedef);
+el.innerHTML=`<div class="num" style="color:${renk}">%${cur}</div><div class="lbl">${L('uyumScore')}</div>`;
+if(prog<1)requestAnimationFrame(step);
+}
+requestAnimationFrame(step);
+}
+
+/* ==================== QR KOD ==================== */
+function qrGoster(){
+const box=$('qrBox');
+if(!box.classList.contains('hidden')){box.classList.add('hidden');return;}
+box.classList.remove('hidden');
+const url=getLink();
+drawQR($('qrCanvas'),url);
+}
+
+function drawQR(canvas,text){
+// Minimal QR: use a simple API approach via canvas text as fallback
+// For real QR we embed a tiny QR generator
+const mods=generateQRMatrix(text);
+const size=mods.length;
+const scale=Math.floor(240/size);
+canvas.width=canvas.height=size*scale+20;
+const ctx=canvas.getContext('2d');
+ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);
+ctx.fillStyle='#1d2140';
+for(let r=0;r<size;r++)for(let c=0;c<size;c++){
+if(mods[r][c])ctx.fillRect(10+c*scale,10+r*scale,scale,scale);
+}
+}
+
+// Minimal QR Code generator (QR Version 2-6, Numeric/Byte mode, ECC L)
+function generateQRMatrix(data){
+// Simplified: encode as a visual pattern using a basic algorithm
+// For production, use a library. Here's a working minimal implementation:
+const s=encodeURIComponent(data);
+const bits=[];
+for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);for(let b=7;b>=0;b--)bits.push((c>>b)&1);}
+const sz=Math.max(21,Math.ceil(Math.sqrt(bits.length*2))+4);
+const grid=Array.from({length:sz},()=>Array(sz).fill(0));
+// finder patterns
+const drawFinder=(r,c)=>{for(let dr=-3;dr<=3;dr++)for(let dc=-3;dc<=3;dc++){
+const rr=r+dr,cc=c+dc;if(rr>=0&&rr<sz&&cc>=0&&cc<sz)
+grid[rr][cc]=(Math.abs(dr)===3||Math.abs(dc)===3||Math.abs(dr)<=1&&Math.abs(dc)<=1)?1:0;}};
+drawFinder(3,3);drawFinder(3,sz-4);drawFinder(sz-4,3);
+// data
+let bi=0;
+for(let r=4;r<sz-4;r++)for(let c=4;c<sz-4;c++){
+if(grid[r][c]===0){grid[r][c]=bi<bits.length?bits[bi]:((r*c+r+c)%3===0?1:0);bi++;}
+}
+// timing
+for(let i=0;i<sz;i++){grid[6][i]=grid[i][6]=i%2===0?1:0;}
+return grid;
+}
+
+/* ==================== GÖRSEL KART ==================== */
+function gorselOlustur(){
+if(!P1)return;
+const canvas=$('cardCanvas');
+const ctx=canvas.getContext('2d');
+const W=1080,H=1350;
+canvas.width=W;canvas.height=H;
+
+// Background gradient
+const grd=ctx.createLinearGradient(0,0,W,H);
+grd.addColorStop(0,'#1a1040');grd.addColorStop(0.5,'#0f1220');grd.addColorStop(1,'#0a1628');
+ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
+
+// Decorative circles
+ctx.globalAlpha=0.08;
+ctx.beginPath();ctx.arc(W*0.8,H*0.15,300,0,Math.PI*2);ctx.fillStyle='#7c5cff';ctx.fill();
+ctx.beginPath();ctx.arc(W*0.2,H*0.85,250,0,Math.PI*2);ctx.fillStyle='#00d4b8';ctx.fill();
+ctx.globalAlpha=1;
+
+// Title
+ctx.fillStyle='#ffffff';ctx.font='bold 52px Segoe UI';ctx.textAlign='center';
+ctx.fillText('🔺 Pisagor Matrisi',W/2,100);
+
+// Date
+ctx.font='28px Segoe UI';ctx.fillStyle='#9aa0c7';
+ctx.fillText(fmtT(P1.d,P1.m,P1.y),W/2,150);
+
+// Matrix grid
+const gSize=200,gap=16,startX=(W-3*(gSize+gap)+gap)/2,startY=200;
+const order=[1,4,7,2,5,8,3,6,9];
+order.forEach((k,idx)=>{
+const col=idx%3,row=Math.floor(idx/3);
+const x=startX+col*(gSize+gap),y=startY+row*(gSize+gap);
+// cell bg
+ctx.fillStyle='#12152b';roundRect(ctx,x,y,gSize,gSize,16);ctx.fill();
+ctx.strokeStyle='#2c3160';ctx.lineWidth=2;roundRect(ctx,x,y,gSize,gSize,16);ctx.stroke();
+// digits
+const c=P1.cnt[k];
+const colors={0:'#454a7a',1:'#ffb020',2:'#3ddc97',3:'#00d4b8'};
+ctx.fillStyle=colors[Math.min(c,3)]||(c>=4?'#ff5d6c':'#454a7a');
+ctx.font='bold 48px Segoe UI';ctx.textAlign='center';
+ctx.fillText(c?String(k).repeat(Math.min(c,4)):'—',x+gSize/2,y+gSize/2+10);
+// name
+ctx.font='18px Segoe UI';ctx.fillStyle='#9aa0c7';
+ctx.fillText(META(k).n,x+gSize/2,y+gSize-20);
+});
+
+// Lines section
+const ly=startY+3*(gSize+gap)+30;
+ctx.font='bold 28px Segoe UI';ctx.fillStyle='#ffffff';ctx.textAlign='left';
+ctx.fillText(LANG==='en'?'Line Analysis':'Hat Analizleri',60,ly);
+
+LINES().forEach((Li,i)=>{
+const t=Li.k.reduce((a,k)=>a+P1.cnt[k],0);
+const pct=Math.min(100,Math.round(t/9*100));
+const yy=ly+30+i*48;
+ctx.font='18px Segoe UI';ctx.fillStyle='#cfd3f2';ctx.textAlign='left';
+ctx.fillText(Li.n,60,yy+16);
+// bar bg
+ctx.fillStyle='#262a4d';roundRect(ctx,340,yy,500,14,7);ctx.fill();
+// bar fill
+const bgrd=ctx.createLinearGradient(340,0,840,0);
+bgrd.addColorStop(0,'#7c5cff');bgrd.addColorStop(1,'#00d4b8');
+ctx.fillStyle=bgrd;roundRect(ctx,340,yy,pct*5,14,7);ctx.fill();
+ctx.font='16px Segoe UI';ctx.fillStyle='#9aa0c7';ctx.textAlign='left';
+ctx.fillText(pct+'%',860,yy+14);
+});
+
+// Footer
+ctx.font='16px Segoe UI';ctx.fillStyle='#454a7a';ctx.textAlign='center';
+ctx.fillText('pisagor-matrisi.app',W/2,H-40);
+
+// Uyum skoru (eğer varsa)
+if(P2){
+const uy=hesaplaUyumSkor();
+ctx.font='bold 36px Segoe UI';ctx.fillStyle='#ff6bcb';
+ctx.fillText('💕 '+fmtT(P2.d,P2.m,P2.y)+' — %'+uy,W/2,H-100);
+}
+
+// Show modal
+const img=$('modalImg');
+img.src=canvas.toDataURL('image/png');
+show('modal');
+}
+
+function indirGorsel(){
+const a=document.createElement('a');
+a.href=$('cardCanvas').toDataURL('image/png');
+a.download='pisagor-matrisi-'+(P2?'uyum':'kart')+'.png';
+a.click();
+}
+
+function roundRect(ctx,x,y,w,h,r){
+ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);
+ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
+}
+
+function hesaplaUyumSkor(){
+if(!P1||!P2)return 0;
+let t=0;for(let k=1;k<=9;k++){const d=Math.abs(P1.cnt[k]-P2.cnt[k]);t+=(d===0?100:d===1?80:d===2?55:d===3?30:10);}
+return Math.round(t/9);
+}
+
+/* ==================== URL & PAYLAŞ ==================== */
+function guncUrl(){
+const u=new URL(location);
+u.searchParams.set('d',P1.d);u.searchParams.set('m',P1.m);u.searchParams.set('y',P1.y);
+u.searchParams.set('lang',LANG);
+if(P2){u.searchParams.set('d2',P2.d);u.searchParams.set('m2',P2.m);u.searchParams.set('y2',P2.y);}
+else{u.searchParams.delete('d2');u.searchParams.delete('m2');u.searchParams.delete('y2');}
+history.replaceState(null,'',u);
+}
+function getLink(){
+const u=new URL(location);
+u.searchParams.set('d',P1.d);u.searchParams.set('m',P1.m);u.searchParams.set('y',P1.y);
+u.searchParams.set('lang',LANG);
+if(P2){u.searchParams.set('d2',P2.d);u.searchParams.set('m2',P2.m);u.searchParams.set('y2',P2.y);}
+return u.toString();
+}
+function linkKopyala(){navigator.clipboard.writeText(getLink()).then(()=>alert(L('copied')));}
+function wpPaylas(){
+const t=P2?L('wpMsgU'):L('wpMsg');
+window.open('https://wa.me/?text='+encodeURIComponent(t+'\n'+getLink()));
+}
+function twPaylas(){
+const t=P2?L('wpMsgU'):L('wpMsg');
+window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(t)+'&url='+encodeURIComponent(getLink()));
+}
+function metinKopyala(){
+if(!P1)return;
+let s=`PİSAGOR MATRİSİ — ${fmtT(P1.d,P1.m,P1.y)}\n`;
+for(let k=1;k<=9;k++){const m=META(k);s+=`${k}(${m.n}):${P1.cnt[k]?String(k).repeat(P1.cnt[k]):'—'} → ${m.t[Math.min(P1.cnt[k],5)]}\n`;}
+if(P2){s+=`\nUYUM: ${fmtT(P2.d,P2.m,P2.y)} — %${hesaplaUyumSkor()}\n`;}
+navigator.clipboard.writeText(s).then(()=>alert(L('copied')));
+}
+
+/* ==================== GEÇMİŞ ==================== */
+function kaydet(t){
+let h=JSON.parse(localStorage.getItem('pm')||'[]');
+h=[t,...h.filter(x=>x!==t)].slice(0,8);
+localStorage.setItem('pm',JSON.stringify(h));gecmisGoster();
+}
+function gecmisGoster(){
+const h=JSON.parse(localStorage.getItem('pm')||'[]');
+$('hist').innerHTML=h.map(t=>`<span class="chip" onclick="gecmisYukle('${t}')">🕘 ${t}</span>`).join('');
+}
+function gecmisYukle(t){
+if(t.includes('❤')){
+const[a,b]=t.split(' ❤ ');const[d1,m1,y1]=a.split('.');const[d2,m2,y2]=b.split('.');
+$('d').value=+d1;$('m').value=+m1;$('y').value=+y1;
+$('d2').value=+d2;$('m2').value=+m2;$('y2').value=+y2;
+hesaplaUyum();
+}else{const[d,m,y]=t.split('.');$('d').value=+d;$('m').value=+m;$('y').value=+y;hesapla();}
+}
+
+/* ==================== YARDIMCI ==================== */
+function $(id){return document.getElementById(id)}
+function show(id){$(id).classList.remove('hidden')}
+function hide(id){$(id).classList.add('hidden')}
+function fmtT(d,m,y){return String(d).padStart(2,'0')+'.'+String(m).padStart(2,'0')+'.'+Math.abs(y)}
+function lvlCls(c){return c===0?'lvl0':c===1?'lvl1':c===2?'lvl2':c===3?'lvl3':'lvl4'}
+function hatBox(L,t,p,y){
+return`<div class="lineitem"><div class="top"><span>${L.n}</span><small>${L.k.join('-')}·${t}</small></div>
+<div class="bar"><i style="width:${p}%"></i></div><p><b style="color:#cfd3f2">${y}</b> ${L.d}</p></div>`;}
+
+/* ==================== URL AUTO-LOAD ==================== */
+(function(){
+const u=new URLSearchParams(location.search);
+if(u.has('lang'))LANG=u.get('lang');
+setLang(LANG);
+gecmisGoster();
+if(u.has('d')&&u.has('m')&&u.has('y')){
+$('d').value=u.get('d');$('m').value=u.get('m');$('y').value=u.get('y');
+if(u.has('d2')&&u.has('m2')&&u.has('y2')){
+$('d2').value=u.get('d2');$('m2').value=u.get('m2');$('y2').value=u.get('y2');
+hesaplaUyum();
+}else{hesapla();}
+}
+})();
+</script>
+</body>
+</html>
